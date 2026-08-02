@@ -5,8 +5,17 @@ import type { IProduct } from "../models/product.model.ts";
 
 export async function getAllProducts(req: Request, res: Response) {
     try {
+        const page: number = Math.max(1, parseInt(req.query.page as string) || 1);
+        const limit: number = Math.min(100, parseInt(req.query.limit as string) || 1);
 
-        const products = await ProductModel.find();
+        const skip = (page - 1) * limit;
+
+        const products = await ProductModel.find()
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 });
+
+        
         return res.json(products);
 
     } catch (err) {

@@ -6,7 +6,17 @@ import type { IOrder } from "../models/order.model.ts";
 export async function getAllOrders(req: Request, res: Response) {
     try {
 
-        const orders = await OrderModel.find();
+        const page: number = Math.max(1, parseInt(req.query.page as string) || 1);
+        const limit: number = Math.min(100, parseInt(req.query.limit as string) || 1);
+
+        const skip = (page - 1) * limit;
+
+        const orders = await OrderModel
+        .find()
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 });
+
         return res.json(orders);
 
     } catch (err) {
@@ -71,6 +81,8 @@ export async function createOrder(req: Request, res: Response) {
 
 export async function updateOrderById(req: Request, res: Response) {
     try {
+
+
 
         const { orderId } = req.params;
     
