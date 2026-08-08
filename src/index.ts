@@ -17,6 +17,9 @@ import morgan from "morgan";
 import { loggerMiddleware } from "./middleware/logger.ts";
 import { headersMiddleware } from "./middleware/header.ts";
 import { apiKeyMiddleware } from "./middleware/apiKey.ts";
+import { authRouter } from "./routers/auth.router.ts";
+import { authenticate } from "./middleware/authentication.ts";
+import cookieParser from "cookie-parser";
 
 
 // constants
@@ -62,6 +65,7 @@ app.use(loggerMiddleware);
 app.use(headersMiddleware);
 app.use(apiKeyMiddleware);
 app.use(express.json());
+app.use(cookieParser())
 app.use(cors({
     origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -69,7 +73,7 @@ app.use(cors({
     credentials: true,
     maxAge: 24 * 60 * 60 * 1000
 }));
-
+app.use("/profile", authenticate);
 
 // routing
 app.get("/", (req: Request, res: Response) => {
@@ -79,7 +83,7 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/profile", (req: Request, res: Response) => {
     console.log(dir)
     return res.sendFile(dir + "/src/static/index.html");
-})
+});
 
 app.post("/profile", upload.single('profile-picture'), (req: Request, res: Response) => {
     console.log(req.body);
@@ -100,6 +104,7 @@ app.post("/profile", upload.single('profile-picture'), (req: Request, res: Respo
 // attaching routers
 // app.use("/api/products", productRouter);
 // app.use("/api/orders", orderRouter);
+app.use("/auth", authRouter);
 
 
 app.listen(PORT, () => {
